@@ -1,4 +1,5 @@
 require 'ruby_cop'
+require 'pry'
 
 describe RubyCop::Policy do
   let(:policy) { described_class.new }
@@ -250,14 +251,6 @@ describe RubyCop::Policy do
     it { should_not allow('unless $x; 1; else 2; end') }
     it { should_not allow('unless 1; $x; else 2; end') }
     it { should_not allow('unless 1; 1; else $x; end') }
-  end
-
-  context "until" do
-    it { should_not allow('true until false') }
-  end
-
-  context "while" do
-    it { should_not allow('true while true') }
   end
 
   context "yield" do

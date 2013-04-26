@@ -289,19 +289,10 @@ module RubyCop
       visit(node.operand)
     end
 
-    def visit_Until(node)
-      false # never allowed
-    end
-    alias_method :visit_UntilMod, :visit_Until
-
     def visit_When(node)
       visit(node.expression) && node.elements.all? { |e| visit(e) }
     end
 
-    def visit_While(node)
-      false # never allowed
-    end
-    alias_method :visit_WhileMod, :visit_While
 
     private
 
