@@ -112,8 +112,9 @@ module RubyCop
     ].to_set.freeze
 
     def visit_Call(node)
-      if CALL_BLACKLIST.include?(node.identifier.token.to_s)
-        capture_rejection(false, node.identifier.token.to_s)
+      identifier = string_from_call_identifier(node.identifier)
+      if CALL_BLACKLIST.include? identifier
+        capture_rejection(false, identifier)
       else
         [node.target, node.arguments, node.block].compact.all? { |e| visit(e) }
       end
@@ -364,6 +365,14 @@ module RubyCop
     def capture_rejection(allowed, rejection)
       set_rejection(rejection) unless allowed
       allowed
+    end
+
+    def string_from_call_identifier(identifier)
+      if identifier.respond_to?(:token)
+        identifier.token.to_s
+      else
+        identifier.to_s
+      end
     end
   end
 end

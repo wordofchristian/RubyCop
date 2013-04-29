@@ -1,6 +1,5 @@
 require 'ruby_cop'
 
-
 describe RubyCop::Policy do
   let(:policy) { described_class.new }
   subject { policy }
@@ -306,19 +305,25 @@ describe RubyCop::Policy do
     it { should allow('def foo; yield; end') }
   end
 
-  context "Block exercises" do
-
-    [
-      "puts Float.class",
-      "puts String.class",
-      "puts Array.class",
-      "puts Range.class",
-      "puts Hash.class",
-      "puts Symbol.class",
-    ].each do |good|
-      it "allows #{good.inspect}" do
-        should allow(good)
+  context "Bloc exercises" do
+    context "inspecting constants" do
+      %w[
+        Float
+        String
+        Array
+        Range
+        Hash
+        Symbol
+      ].each do |name|
+        it "allows 'puts #{name}.class'" do
+          should allow("puts #{name}.class")
+        end
       end
+    end
+
+    context 'Syntactic Sugar' do
+      it { should allow 'puts 5.+(2)' }
+      it { should allow 'puts 5.+(3).*(4)' }
     end
   end
 
