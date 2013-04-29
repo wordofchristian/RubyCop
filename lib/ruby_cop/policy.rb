@@ -146,7 +146,7 @@ module RubyCop
     end
 
     def visit_Constant(node)
-      capture_rejection(const_allowed?(node.token), node.token)
+      capture_rejection(const_allowed?(node.token), "Constant: #{node.token}")
     end
 
     def visit_ConstantAssignment(node)
@@ -312,9 +312,7 @@ module RubyCop
     CONST_BLACKLIST = %w[
       ARGF
       ARGV
-      Array
       Base64
-      Class
       Dir
       ENV
       Enumerable
@@ -325,7 +323,6 @@ module RubyCop
       FileUtils
       GC
       Gem
-      Hash
       IO
       IRB
       Kernel
@@ -349,7 +346,6 @@ module RubyCop
       STDERR
       STDIN
       STDOUT
-      String
       TOPLEVEL_BINDING
       Thread
       VERSION

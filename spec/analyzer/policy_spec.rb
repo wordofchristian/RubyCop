@@ -383,7 +383,6 @@ describe RubyCop::Policy do
     end
 
     [
-      "Class",
       "def show\n  @zombie = Zombie.find(params[:id])\n\n  respond_to do |format|\n    `ls`\n  end\nend\n",
       "Module.delete(3)",
       "Module.find(\"Ash\")",
@@ -392,7 +391,6 @@ describe RubyCop::Policy do
       "require \"tempfile\"\nt = Zombies.new('Zombies')\nZombies.where(:id => 1)\nt.save",
       "system('ls')",
       "t = Zombies.open()",
-      "Tweet.find(1)\nDim var as String\nvar=Tweet.name",
       "Zombie.load(1)\n\n",
       "`echo 1`",
       "`ls -l`",

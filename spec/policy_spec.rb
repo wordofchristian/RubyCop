@@ -306,6 +306,22 @@ describe RubyCop::Policy do
     it { should allow('def foo; yield; end') }
   end
 
+  context "Block exercises" do
+
+    [
+      "puts Float.class",
+      "puts String.class",
+      "puts Array.class",
+      "puts Range.class",
+      "puts Hash.class",
+      "puts Symbol.class",
+    ].each do |good|
+      it "allows #{good.inspect}" do
+        should allow(good)
+      end
+    end
+  end
+
   context "Rails for Zombies" do
     before(:each) do
       policy.whitelist_const('GenericController')
@@ -426,7 +442,6 @@ describe RubyCop::Policy do
     end
 
     [
-      "Class",
       "def show\n  @zombie = Zombie.find(params[:id])\n\n  respond_to do |format|\n    `ls`\n  end\nend\n",
       "Module.delete(3)",
       "Module.find(\"Ash\")",
@@ -435,7 +450,6 @@ describe RubyCop::Policy do
       "require \"tempfile\"\nt = Zombies.new('Zombies')\nZombies.where(:id => 1)\nt.save",
       "system('ls')",
       "t = Zombies.open()",
-      "Tweet.find(1)\nDim var as String\nvar=Tweet.name",
       "Zombie.load(1)\n\n",
       "`echo 1`",
       "`ls -l`",
