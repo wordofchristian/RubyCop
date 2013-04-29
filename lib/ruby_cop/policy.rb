@@ -3,7 +3,10 @@ require 'set'
 module RubyCop
   # Visitor class for Ruby::Node subclasses. Determines whether the node is
   # safe according to our rules.
+
   class Policy
+    attr_reader :rejection
+
     def initialize
       @const_list = GrayList.new
       initialize_const_blacklist
@@ -38,6 +41,7 @@ module RubyCop
     end
 
     def visit_Alias(node)
+      set_rejection 'alias'
       false # never allowed
     end
 
@@ -108,7 +112,11 @@ module RubyCop
     ].to_set.freeze
 
     def visit_Call(node)
-      !CALL_BLACKLIST.include?(node.identifier.token.to_s) && [node.target, node.arguments, node.block].compact.all? { |e| visit(e) }
+      if CALL_BLACKLIST.include?(node.identifier.token.to_s)
+        capture_rejection(false, node.identifier.token.to_s)
+      else
+        [node.target, node.arguments, node.block].compact.all? { |e| visit(e) }
+      end
     end
 
     def visit_Case(node)
@@ -124,10 +132,12 @@ module RubyCop
     end
 
     def visit_ClassVariable(node)
+      set_rejection("Class Variable: #{node.token}")
       false # never allowed
     end
 
     def visit_ClassVariableAssignment(node)
+      set_rejection("Class Variable: #{node.lvalue.token}")
       false # never allowed
     end
 
@@ -136,7 +146,7 @@ module RubyCop
     end
 
     def visit_Constant(node)
-      const_allowed?(node.token)
+      capture_rejection(const_allowed?(node.token), node.token)
     end
 
     def visit_ConstantAssignment(node)
@@ -152,6 +162,7 @@ module RubyCop
     end
 
     def visit_ExecutableString(node)
+      set_rejection('shell access e.g. (exec or backticks ``)')
       false # never allowed
     end
 
@@ -164,10 +175,12 @@ module RubyCop
     end
 
     def visit_GlobalVariable(node)
+      set_rejection(node.token)
       false # never allowed
     end
 
     def visit_GlobalVariableAssignment(node)
+      set_rejection(node.lvalue.token)
       false # never allowed
     end
 
@@ -176,7 +189,7 @@ module RubyCop
     end
 
     def visit_Identifier(node)
-      !CALL_BLACKLIST.include?(node.token)
+      capture_rejection !CALL_BLACKLIST.include?(node.token), node.token
     end
 
     def visit_If(node)
@@ -344,6 +357,17 @@ module RubyCop
 
     def initialize_const_blacklist
       CONST_BLACKLIST.each { |const| blacklist_const(const) }
+    end
+
+    private
+
+    def set_rejection(keyword)
+      @rejection = "Not allowed to use '#{keyword}'"
+    end
+
+    def capture_rejection(allowed, rejection)
+      set_rejection(rejection) unless allowed
+      allowed
     end
   end
 end

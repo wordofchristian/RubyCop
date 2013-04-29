@@ -1,9 +1,13 @@
 require 'ruby_cop'
-require 'pry'
+
 
 describe RubyCop::Policy do
   let(:policy) { described_class.new }
   subject { policy }
+
+  def run_code(code)
+    RubyCop::NodeBuilder.build(code).accept(policy)
+  end
 
   RSpec::Matchers.define(:allow) do |ruby|
     match { |policy| RubyCop::NodeBuilder.build(ruby).accept(policy) }
@@ -14,6 +18,10 @@ describe RubyCop::Policy do
       it { should_not allow('@@x = 1') }
       it { should_not allow('@@x ||= 1') }
       it { should_not allow('@@x += 1') }
+      it 'should provide a reason' do
+        run_code '@@x = 1'
+        policy.rejection.should =~ /Class Variable: @@x/
+      end
     end
 
     context "constants" do
@@ -24,12 +32,21 @@ describe RubyCop::Policy do
       it { should_not allow('Foo = Kernel') }
       it { should_not allow('Foo = ::Kernel') }
       it { should_not allow('Foo = Object::Kernel') }
+
+      it 'should provide a reason' do
+        run_code 'FileUtils'
+        policy.rejection.should =~ /FileUtils/
+      end
     end
 
     context "globals" do
       it { should_not allow('$x = 1') }
       it { should_not allow('$x ||= 1') }
       it { should_not allow('$x += 1') }
+      it 'should provide a reason' do
+        run_code '$x = 1'
+        policy.rejection.should =~ /\$x/
+      end
     end
 
     context "instance variables" do
@@ -37,14 +54,30 @@ describe RubyCop::Policy do
       it { should allow('@x += 1') }
       it { should_not allow('@x = $x') }
       it { should_not allow('@x = @@x') }
+      it 'should provide a reason for globals' do
+        run_code '@x = $x'
+        policy.rejection.should =~ /\$x/
+      end
     end
 
     context "locals" do
       it { should allow('x = 1') }
       it { should allow('x ||= 1') }
       it { should allow('x += 1') }
-      it { should_not allow('x = $x') }
-      it { should_not allow('x = @@x') }
+      context 'assigned to global' do
+        it { should_not allow('x = $x') }
+        it 'provides reason' do
+          run_code 'x = $x'
+          policy.rejection.should =~ /\$x/
+        end
+      end
+      context 'assigned to class variable' do
+        it { should_not allow('x = @@x') }
+        it 'provides a reason' do
+          run_code 'x = @@x'
+          policy.rejection.should =~ /Class Variable: @@x/
+        end
+      end
     end
   end
 
@@ -67,6 +100,10 @@ describe RubyCop::Policy do
     it { should_not allow('->(a) { $x }') }
     it { should_not allow('lambda { $x }') }
     it { should_not allow('proc { $x }') }
+    it 'provides a reason' do
+      run_code '->(a = $x) { }'
+      policy.rejection.should =~ /\$x/
+    end
   end
 
   context "calls" do
@@ -142,6 +179,10 @@ describe RubyCop::Policy do
       it { should_not allow('undef :raise') }
       it { should_not allow('undef raise') }
       it { should_not allow(%{''.dup})}
+      it 'provides a reason' do
+        run_code 'fork()'
+        policy.rejection.should =~ /fork/
+      end
     end
   end
 
@@ -177,6 +218,10 @@ describe RubyCop::Policy do
   context "dynamic symbols" do
     it { should_not allow(':"abc#{`ls`}"') }
     it { should_not allow(':"#{`ls`}abc"') }
+    it 'provides a reason' do
+      run_code ':"#{`ls`}abc"'
+      policy.rejection.should =~ /shell access/
+    end
   end
 
   context "for" do
@@ -219,6 +264,10 @@ describe RubyCop::Policy do
     it { should_not allow('__callee__') }
     it { should_not allow('__FILE__') }
     it { should_not allow('__method__') }
+    it 'provides a reason' do
+      run_code '__method__'
+      policy.rejection.should =~ /__method__/
+    end
   end
 
   context "methods" do

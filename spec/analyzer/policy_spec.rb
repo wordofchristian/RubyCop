@@ -252,11 +252,11 @@ describe RubyCop::Policy do
   end
 
   context "until" do
-    it { should_not allow('true until false') }
+    it { should allow('true until false') }
   end
 
   context "while" do
-    it { should_not allow('true while true') }
+    it { should allow('true while true') }
   end
 
   context "yield" do
