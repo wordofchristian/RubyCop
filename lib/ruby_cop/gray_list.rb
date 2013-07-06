@@ -10,6 +10,7 @@ module RubyCop
 
     # An item is allowed if it's whitelisted, or if it's not blacklisted.
     def allow?(item)
+      item = item.to_s
       @whitelist.include?(item) || !@blacklist.include?(item)
     end
 

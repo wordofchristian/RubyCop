@@ -16,10 +16,16 @@ class Player
 
     spaces.each_with_index { |space, index|
       distance = index.succ
-      entity = VISIBLE_THINGS.select { |type|
-        space.send "#{type.to_s}?".to_sym
-      }.first
-      raise "woah" unless entity
+
+      entity = case
+               when space.stairs? then :stairs
+               when space.empty? then :empty
+               when space.wall? then :wall
+               when space.captive? then :captive
+               when space.enemey? then :enemey
+               else raise "whoa"
+               end
+
       line_of_sight[:nearest] = entity unless line_of_sight[:nearest]
       if line_of_sight[entity]
         line_of_sight[entity] << distance

@@ -6,6 +6,14 @@ describe RubyCop::Policy do
 
   RSpec::Matchers.define(:allow) do |ruby|
     match { |policy| RubyCop::NodeBuilder.build(ruby).accept(policy) }
+
+    failure_message_for_should_not do |policy|
+      "expected that it would not allow:\n #{ruby}"
+    end
+
+    failure_message_for_should do |policy|
+      "expected that it would allow:\n #{ruby} \n but #{policy.rejection}"
+    end
   end
 
   context "assignment" do
@@ -252,11 +260,19 @@ describe RubyCop::Policy do
   end
 
   context "until" do
-    it { should allow('true until false') }
+    it { should_not allow('true until false') }
+    context 'enabled' do
+      before { subject.allow_until = true }
+      it { should allow('true until false') }
+    end
   end
 
   context "while" do
-    it { should allow('true while true') }
+    it { should_not allow('true while true') }
+    context 'enabled' do
+      before { subject.allow_while = true }
+      it { should allow('true while false') }
+    end
   end
 
   context "yield" do

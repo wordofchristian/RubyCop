@@ -316,6 +316,7 @@ describe RubyCop::Policy do
         Symbol
       ].each do |name|
         it "allows 'puts #{name}.class'" do
+          policy.whitelist_const name
           should allow("puts #{name}.class")
         end
       end

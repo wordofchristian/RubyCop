@@ -7,9 +7,12 @@ module RubyCop
   class Policy
     attr_reader :rejection
 
+    attr_accessor :allow_while, :allow_until
+
     def initialize
       @const_list = GrayList.new
-      initialize_const_blacklist
+      @call_list = GrayList.new
+      initialize_blacklists
     end
 
     def inspect
@@ -20,12 +23,27 @@ module RubyCop
       @const_list.blacklist(const)
     end
 
+    def blacklist_call(call)
+      @call_list.blacklist(call)
+    end
+
+    def const_allowed?(const)
+      @const_list.allow?(const)
+    end
     def const_allowed?(const)
       @const_list.allow?(const)
     end
 
+    def call_allowed?(identifier)
+      @call_list.allow?(identifier)
+    end
+
     def whitelist_const(const)
       @const_list.whitelist(const)
+    end
+
+    def whitelist_call(call)
+      @call_list.whitelist(call)
     end
 
     def visit(node)
@@ -113,10 +131,11 @@ module RubyCop
 
     def visit_Call(node)
       identifier = string_from_call_identifier(node.identifier)
-      if CALL_BLACKLIST.include? identifier
-        capture_rejection(false, identifier)
-      else
+
+      if call_allowed?(identifier)
         [node.target, node.arguments, node.block].compact.all? { |e| visit(e) }
+      else
+        capture_rejection(false, identifier)
       end
     end
 
@@ -190,7 +209,7 @@ module RubyCop
     end
 
     def visit_Identifier(node)
-      capture_rejection !CALL_BLACKLIST.include?(node.token), node.token
+      capture_rejection call_allowed?(node.token), node.token
     end
 
     def visit_If(node)
@@ -303,17 +322,29 @@ module RubyCop
       visit(node.operand)
     end
 
+    def visit_Until(node)
+      self.allow_until || false
+    end
+
+    alias_method :visit_UntilMod, :visit_Until
+
     def visit_When(node)
       visit(node.expression) && node.elements.all? { |e| visit(e) }
     end
 
+    def visit_While(node)
+      self.allow_while || false
+    end
+    alias_method :visit_WhileMod, :visit_While
 
     private
 
     CONST_BLACKLIST = %w[
       ARGF
       ARGV
+      Array
       Base64
+      Class
       Dir
       ENV
       Enumerable
@@ -324,6 +355,7 @@ module RubyCop
       FileUtils
       GC
       Gem
+      Hash
       IO
       IRB
       Kernel
@@ -347,13 +379,15 @@ module RubyCop
       STDERR
       STDIN
       STDOUT
+      String
       TOPLEVEL_BINDING
       Thread
       VERSION
     ].freeze
 
-    def initialize_const_blacklist
+    def initialize_blacklists
       CONST_BLACKLIST.each { |const| blacklist_const(const) }
+      CALL_BLACKLIST.each { |identifier| blacklist_call(identifier) }
     end
 
     private
