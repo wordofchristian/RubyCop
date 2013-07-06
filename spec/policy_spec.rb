@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'ruby_cop'
 
 describe RubyCop::Policy do
@@ -303,6 +304,10 @@ describe RubyCop::Policy do
 
   context "yield" do
     it { should allow('def foo; yield; end') }
+  end
+
+  context "RubyWarrior" do
+    it { should allow fixture('epic_player') }
   end
 
   context "Bloc exercises" do

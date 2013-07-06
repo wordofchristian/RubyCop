@@ -32,6 +32,10 @@ module RubyCop
       args.add(arg); args
     end
 
+    def on_args_add_star(args, arg)
+      args.add(arg); args
+    end
+
     def on_args_add_block(args, block)
       args.add_block(block) if block; args
     end
