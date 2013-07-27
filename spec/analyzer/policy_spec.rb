@@ -268,7 +268,11 @@ describe RubyCop::Policy do
   end
 
   context "while" do
-    it { should_not allow('true while true') }
+    it 'should not allow while' do
+      should_not allow('true while true')
+      policy.rejection.should =~ /while/
+    end
+
     context 'enabled' do
       before { subject.allow_while = true }
       it { should allow('true while false') }

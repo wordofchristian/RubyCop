@@ -323,7 +323,11 @@ module RubyCop
     end
 
     def visit_Until(node)
-      self.allow_until || false
+      allowed = self.allow_until || false
+      unless allowed
+        set_rejection('until')
+      end
+      allowed
     end
 
     alias_method :visit_UntilMod, :visit_Until
@@ -333,8 +337,13 @@ module RubyCop
     end
 
     def visit_While(node)
-      self.allow_while || false
+      allowed = self.allow_while || false
+      unless allowed
+        set_rejection('while')
+      end
+      allowed
     end
+
     alias_method :visit_WhileMod, :visit_While
 
     private
