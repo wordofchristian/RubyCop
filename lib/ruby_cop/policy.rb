@@ -10,9 +10,10 @@ module RubyCop
     attr_accessor :allow_while, :allow_until
     attr_reader :const_list, :call_list
 
-    def initialize(strict = false)
-      @const_list = GrayList.new(strict)
-      @call_list = GrayList.new(strict)
+    def initialize(options = {})
+      strict = options.fetch(:strict) { [] }
+      @const_list = GrayList.new(strict.include?(:constants))
+      @call_list = GrayList.new(strict.include?(:calls))
       initialize_blacklists
     end
 
