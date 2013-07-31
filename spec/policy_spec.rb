@@ -308,6 +308,11 @@ describe RubyCop::Policy do
 
   context "RubyWarrior" do
     it { should allow fixture('epic_player') }
+    it 'rejects nested constants' do
+      policy.blacklist_const('RubyWarrior')
+      should_not allow 'class RubyWarrior::Foo; end'
+      should_not allow 'class Thing::RubyWarrior::Foo; end'
+    end
     it 'supports strict mode' do
       policy = described_class.new(strict: [:constants])
       policy.whitelist_const('Thing')
@@ -346,6 +351,7 @@ describe RubyCop::Policy do
       policy.whitelist_const('Weapon')
       policy.whitelist_const('Zombie')
       policy.whitelist_const('ZombiesController')
+      policy.whitelist_const('Rails')
     end
 
     [

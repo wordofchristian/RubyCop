@@ -165,7 +165,11 @@ module RubyCop
     end
 
     def visit_Constant(node)
-      capture_rejection(const_allowed?(node.token), "Constant: #{node.token}")
+      if node.namespace
+        return false unless visit(node.namespace)
+      end
+
+      capture_rejection const_allowed?(node.token), "Constant: #{node.token}"
     end
 
     def visit_ConstantAssignment(node)
