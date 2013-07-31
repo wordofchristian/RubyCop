@@ -3,7 +3,10 @@ require 'set'
 module RubyCop
   # Combination blacklist and whitelist.
   class GrayList
-    def initialize
+    attr_accessor :strict
+
+    def initialize(strict = false)
+      @strict = strict
       @blacklist = Set.new
       @whitelist = Set.new
     end
@@ -11,7 +14,7 @@ module RubyCop
     # An item is allowed if it's whitelisted, or if it's not blacklisted.
     def allow?(item)
       item = item.to_s
-      @whitelist.include?(item) || !@blacklist.include?(item)
+      @whitelist.include?(item) || (!@blacklist.include?(item) && !strict)
     end
 
     def blacklist(item)

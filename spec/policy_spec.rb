@@ -308,6 +308,12 @@ describe RubyCop::Policy do
 
   context "RubyWarrior" do
     it { should allow fixture('epic_player') }
+    it 'supports strict mode' do
+      policy = described_class.new(strict: [:constants])
+      policy.whitelist_const('Thing')
+      RubyCop::NodeBuilder.build('class Foo; end').accept(policy).should be_false
+      RubyCop::NodeBuilder.build('class Thing; end').accept(policy).should be_true
+    end
   end
 
   context "Bloc exercises" do

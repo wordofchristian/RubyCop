@@ -8,10 +8,11 @@ module RubyCop
     attr_reader :rejection
 
     attr_accessor :allow_while, :allow_until
+    attr_reader :const_list, :call_list
 
-    def initialize
-      @const_list = GrayList.new
-      @call_list = GrayList.new
+    def initialize(strict = false)
+      @const_list = GrayList.new(strict)
+      @call_list = GrayList.new(strict)
       initialize_blacklists
     end
 
@@ -27,9 +28,6 @@ module RubyCop
       @call_list.blacklist(call)
     end
 
-    def const_allowed?(const)
-      @const_list.allow?(const)
-    end
     def const_allowed?(const)
       @const_list.allow?(const)
     end
